@@ -27,44 +27,50 @@ The `config.json` contains an array called `files` that consists of dictionary o
 * `path`: Local path to the file to be ingested. Note that this may be a directory, in which case all files in that directory and any of its subdirectories will be recursively processed
 * `keys`: The names of the columns that constitute the unique keys for that entity
 
+This tap supports CSV files with optional gzip, bzip2 and xz (lzma) compression. Just name them in path. See examples below.
+
 Example:
 
 ```json
 {
-	"files":	[ 	
-					{	"entity" : "leads",
-						"path" : "/path/to/leads.csv",
-						"keys" : ["Id"]
-					},
-					{	"entity" : "opportunities",
-						"path" : "/path/to/opportunities.csv",
-						"keys" : ["Id"]
-					}
-				]
+    "files": [
+        {
+            "entity" : "leads",
+            "path" : "/path/to/leads.csv",
+            "keys" : ["Id"]
+        },
+        {
+            "entity" : "opportunities",
+            "path" : "/path/to/opportunities.csv.gz",
+            "keys" : ["Id"]
+        }
+    ]
 }
 ```
 
-Optionally, the files definition can be provided by an external json file:
+Optionally, the `files` definition can be provided by an external json file:
 
 **config.json**
 ```json
 {
-	"csv_files_definition": "files_def.json"
+    "csv_files_definition": "files_def.json"
 }
 ```
 
 
 **files_def.json**
 ```json
-[ 	
-	{	"entity" : "leads",
-		"path" : "/path/to/leads.csv",
-		"keys" : ["Id"]
-	},
-	{	"entity" : "opportunities",
-		"path" : "/path/to/opportunities.csv",
-		"keys" : ["Id"]
-	}
+[
+    {
+        "entity" : "leads",
+        "path" : "/path/to/leads.csv.bz2",
+        "keys" : ["Id"]
+    },
+    {
+        "entity" : "opportunities",
+        "path" : "/path/to/opportunities.csv.xz",
+        "keys" : ["Id"]
+    }
 ]
 ```
 

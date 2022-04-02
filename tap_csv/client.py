@@ -1,6 +1,9 @@
 """Custom client handling, including CSVStream base class."""
 
+import bz2
 import csv
+import gzip
+import lzma
 import os
 from typing import Iterable, List, Optional
 
@@ -69,18 +72,31 @@ class CSVStream(Stream):
 
     def is_valid_filename(self, file_path: str) -> bool:
         """Return a boolean of whether the file includes CSV extension."""
-        is_valid = True
-        if file_path[-4:] != ".csv":
-            is_valid = False
-            self.logger.warning(f"Skipping non-csv file '{file_path}'")
-            self.logger.warning(
-                "Please provide a CSV file that ends with '.csv'; e.g. 'users.csv'"
-            )
-        return is_valid
+        supported_extensions = ['.csv', '.csv.gz', '.csv.bz2', '.csv.xz', '.csv.lzma']
+        file_path = file_path.lower()
+
+        for check_ext in supported_extensions:
+            if file_path.endswith(check_ext):
+                return True
+
+        self.logger.warning(f"Skipping non-csv file '{file_path}'")
+        self.logger.warning("Please provide a CSV file with any of supported extensions: "
+                            f"{', '.join(supported_extensions)}")
+        return False
 
     def get_rows(self, file_path: str) -> Iterable[list]:
         """Return a generator of the rows in a particular CSV file."""
-        with open(file_path, "r") as f:
+
+        if file_path.lower().endswith('.gz'):
+            opener = gzip.open
+        elif file_path.lower().endswith('.bz2'):
+            opener = bz2.open
+        elif file_path.lower().endswith('.xz') or file_path.lower().endswith('.lzma'):
+            opener = lzma.open
+        else:
+            opener = open
+
+        with opener(file_path, "rt") as f:
             reader = csv.reader(f)
             for row in reader:
                 yield row
@@ -100,6 +116,7 @@ class CSVStream(Stream):
                 break
             break
 
+        # TODO: header might be uninitialized here if the CSV file is empty.
         for column in header:
             # Set all types to string
             # TODO: Try to be smarter about inferring types.
